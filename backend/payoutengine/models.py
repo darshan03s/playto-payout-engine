@@ -20,8 +20,11 @@ class Merchant(BaseModel):
 
 
 class BankAccount(BaseModel):
-    merchant = models.ForeignKey(
-        Merchant, on_delete=models.CASCADE, related_name="bank_accounts", db_index=True)
+    merchant = models.OneToOneField(
+        Merchant,
+        on_delete=models.CASCADE,
+        related_name="bank_account"
+    )
     account_number = models.CharField(max_length=50)
 
     def __str__(self):
