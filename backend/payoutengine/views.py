@@ -21,6 +21,24 @@ class PingView(APIView):
         return Response({"status": "ok"})
 
 
+class MerchantListView(APIView):
+    """
+    GET /api/merchants
+    Returns a list of all merchants.
+    """
+
+    def get(self, request):
+        merchants = Merchant.objects.all().order_by("name")
+        data = [
+            {
+                "merchantId": str(m.id),
+                "merchantName": m.name,
+            }
+            for m in merchants
+        ]
+        return Response({"merchants": data})
+
+
 def _resolve_merchant(request) -> Merchant:
     """
     Resolve merchant from auth context.
