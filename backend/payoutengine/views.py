@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from payoutengine.models import Merchant, Payout
+from payoutengine.models import Merchant, Payout, BankAccount
 from payoutengine.serializers import (
     PayoutRequestSerializer,
     validate_idempotency_key,
@@ -82,6 +82,32 @@ class MerchantDetailView(APIView):
                 "payouts": payout_list,
             }
         })
+
+
+class MerchantBankAccountsView(APIView):
+    """
+    GET /api/merchant/<merchant_id>/bank-accounts
+    Returns the bank accounts belonging to a merchant.
+    """
+
+    def get(self, request, merchant_id):
+        try:
+            merchant = Merchant.objects.get(id=merchant_id)
+        except (Merchant.DoesNotExist, Exception):
+            return Response(
+                {"error": "Merchant not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        accounts = BankAccount.objects.filter(merchant=merchant).order_by("account_number")
+        data = [
+            {
+                "bankAccountId": str(a.id),
+                "bankAccount": a.account_number,
+            }
+            for a in accounts
+        ]
+        return Response({"bankAccounts": data})
 
 
 def _resolve_merchant(request) -> Merchant:
