@@ -20,7 +20,8 @@ services:
     build: .
     container_name: playto_web
     command: sh -c "python wait_for_db.py && python manage.py migrate && python
-      manage.py runserver 0.0.0.0:8000"
+      manage.py shell -c 'from init_app import run; run()' && python manage.py
+      runserver 0.0.0.0:8000"
     volumes:
       - .:/app
     ports:
