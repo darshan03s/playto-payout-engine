@@ -12,10 +12,11 @@ def run():
     for name in merchant_names:
         merchant = Merchant.objects.create(name=name)
 
-        BankAccount.objects.create(
-            merchant=merchant,
-            account_number=str(random.randint(1000000000, 9999999999))
-        )
+        for _ in range(2):
+            BankAccount.objects.create(
+                merchant=merchant,
+                account_number=str(random.randint(10**11, 10**12 - 1))
+            )
 
         merchants.append(merchant)
 
