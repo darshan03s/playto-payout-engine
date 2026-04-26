@@ -13,6 +13,7 @@ from payoutengine.services.payout import (
     IdempotencyConflictError,
     PayoutError,
 )
+from .tasks import process_payout
 
 
 class PingView(APIView):
@@ -88,6 +89,8 @@ class PayoutCreateView(APIView):
                 amount_paise=amount_paise,
                 bank_account_id=bank_account_id,
             )
+            if is_new:
+                process_payout.delay(response_data["payout_id"])
         except InsufficientFundsError as e:
             return Response(
                 {"error": e.message},
