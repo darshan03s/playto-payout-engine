@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from payoutengine.models import Merchant
+from payoutengine.models import Merchant, Payout
 from payoutengine.serializers import (
     PayoutRequestSerializer,
     validate_idempotency_key,
@@ -13,6 +13,7 @@ from payoutengine.services.payout import (
     IdempotencyConflictError,
     PayoutError,
 )
+from payoutengine.services.ledger import get_merchant_balance
 from .tasks import process_payout
 
 
@@ -37,6 +38,50 @@ class MerchantListView(APIView):
             for m in merchants
         ]
         return Response({"merchants": data})
+
+
+class MerchantDetailView(APIView):
+    """
+    GET /api/merchant/<merchant_id>
+    Returns merchant name, balance, and payout history.
+    """
+
+    def get(self, request, merchant_id):
+        try:
+            merchant = Merchant.objects.get(id=merchant_id)
+        except (Merchant.DoesNotExist, Exception):
+            return Response(
+                {"error": "Merchant not found."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        balance = get_merchant_balance(merchant.id)
+
+        payouts = (
+            Payout.objects
+            .filter(merchant=merchant)
+            .select_related("bank_account")
+            .order_by("-created_at")
+        )
+
+        payout_list = [
+            {
+                "payoutId": str(p.id),
+                "requestedAt": p.created_at.isoformat(),
+                "bankAccount": p.bank_account.account_number,
+                "amount": p.amount,
+                "status": p.status,
+            }
+            for p in payouts
+        ]
+
+        return Response({
+            "merchant": {
+                "merchantName": merchant.name,
+                "balance": balance,
+                "payouts": payout_list,
+            }
+        })
 
 
 def _resolve_merchant(request) -> Merchant:
