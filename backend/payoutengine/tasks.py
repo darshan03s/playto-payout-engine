@@ -4,11 +4,15 @@ from payoutengine.models import Payout
 from django.utils import timezone
 import random
 from payoutengine.models import LedgerEntry
+import time
 
 
 @shared_task
 def debug_task(x, y):
     return x + y
+
+
+PROCESSING_DELAY_SECONDS = 30
 
 
 @shared_task
@@ -26,6 +30,10 @@ def process_payout(payout_id):
         payout.status = Payout.Status.PROCESSING
         payout.last_attempt_at = timezone.now()
         payout.save(update_fields=["status", "last_attempt_at", "updated_at"])
+
+    print(
+        f"Processing payout {payout_id}... sleeping for {PROCESSING_DELAY_SECONDS}s")
+    time.sleep(PROCESSING_DELAY_SECONDS)
 
     outcome = random.random()
 
