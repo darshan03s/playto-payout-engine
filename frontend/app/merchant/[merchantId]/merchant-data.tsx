@@ -45,7 +45,7 @@ const MerchantData = ({ merchantId }: { merchantId: string }) => {
   if (!merchant) return null
 
   return (
-    <div className="min-h-screen flex justify-center p-6">
+    <div className="min-h-[calc(100vh-48px)] flex justify-center p-6">
       <div className="w-full max-w-4xl space-y-8">
         <div className="rounded-xl border bg-card p-6 shadow-sm">
           <div className="flex items-center justify-between">

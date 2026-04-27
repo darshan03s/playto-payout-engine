@@ -19,7 +19,9 @@ const Page = async ({ params }: PageProps) => {
 
   if (!res.ok) {
     return (
-      <div className="h-screen flex items-center justify-center">Could not fetch bank accounts</div>
+      <div className="h-[calc(100vh-48px)] flex items-center justify-center">
+        Could not fetch bank accounts
+      </div>
     )
   }
 

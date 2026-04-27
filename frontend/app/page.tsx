@@ -21,7 +21,7 @@ const Page = async () => {
   const merchants = json.merchants as Merchant[]
 
   return (
-    <div className="h-screen flex items-center justify-center">
+    <div className="h-[calc(100vh-48px)] flex items-center justify-center">
       <div className="flex flex-col gap-4">
         <h1 className="text-3xl font-bold">Merchants</h1>
         {merchants.map((m) => (
