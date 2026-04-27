@@ -59,7 +59,7 @@ class MerchantDetailView(APIView):
 
         held_balance = get_held_balance(merchant)
 
-        available_balance = balance - held_balance
+        available_balance = balance
 
         payouts = (
             Payout.objects
