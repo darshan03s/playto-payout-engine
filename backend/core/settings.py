@@ -27,7 +27,7 @@ SECRET_KEY = 'django-insecure--sbr75u3zjy3!_f*4m@43)rjm%34_7k27fl)e7r)g3$^3ywi1%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['playto-payout-engine-hmub.onrender.com']
 
 
 # Application definition
