@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure--sbr75u3zjy3!_f*4m@43)rjm%34_7k27fl)e7r)g3$^3ywi1%
 DEBUG = True
 
 ALLOWED_HOSTS = ['playto-payout-engine-hmub.onrender.com',
-                 'playto-payout.darshans.site',]
+                 'playto-payout.darshans.site', '127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -160,6 +160,7 @@ CELERY_TASK_ALWAYS_EAGER = "test" in sys.argv
 
 CORS_ALLOWED_ORIGINS = [
     "https://playto-payout.darshans.site",
+    "http://localhost:3000",
 ]
 
 CORS_ALLOW_HEADERS = [
