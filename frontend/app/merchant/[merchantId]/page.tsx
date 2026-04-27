@@ -19,6 +19,8 @@ interface PageProps {
 interface Merchant {
   merchantName: string
   balance: number
+  availableBalance: number
+  heldBalance: number
   payouts: Payout[]
 }
 
@@ -60,8 +62,13 @@ const Page = async ({ params }: PageProps) => {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold tracking-tight">{merchant.merchantName}</h1>
-              <p className="text-muted-foreground text-sm mt-2">Available Balance</p>
-              <p className="text-3xl font-bold mt-1">{formatAmount(merchant.balance)}</p>
+              <div className="mt-2 space-y-1">
+                <p className="text-sm text-muted-foreground">Available</p>
+                <p className="text-2xl font-bold">{formatAmount(merchant.availableBalance)}</p>
+
+                <p className="text-sm text-muted-foreground mt-2">Held</p>
+                <p className="text-lg font-medium">{formatAmount(merchant.heldBalance)}</p>
+              </div>
             </div>
             <Link href={`/merchant/${merchantId}/payout`}>
               <Button size="lg">Request Payout</Button>

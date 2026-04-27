@@ -1,6 +1,6 @@
 from django.db.models import Sum, Case, When, IntegerField, Value
 from django.db.models.functions import Coalesce
-from payoutengine.models import LedgerEntry
+from payoutengine.models import LedgerEntry, Payout
 from django.db import models
 
 
@@ -23,3 +23,20 @@ def get_merchant_balance(merchant_id: str) -> int:
     )
 
     return result["balance"]
+
+
+def get_held_balance(merchant):
+    result = (
+        LedgerEntry.objects
+        .filter(
+            merchant=merchant,
+            entry_type=LedgerEntry.EntryType.DEBIT,
+            payout__status__in=[
+                Payout.Status.PENDING,
+                Payout.Status.PROCESSING
+            ]
+        )
+        .aggregate(total=Coalesce(Sum("amount"), Value(0)))
+    )
+
+    return result["total"]

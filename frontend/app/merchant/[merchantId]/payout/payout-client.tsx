@@ -1,7 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -27,6 +27,8 @@ const PayoutClient = ({ bankAccounts }: { bankAccounts: BankAccount[] }) => {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+
+  const router = useRouter()
 
   const handleProceed = async () => {
     setError('')
@@ -74,6 +76,10 @@ const PayoutClient = ({ bankAccounts }: { bankAccounts: BankAccount[] }) => {
           setSuccess('Payout requested')
           idempotencyKeyRef.current = null
           setLoading(false)
+          setTimeout(() => {
+            router.push(`/merchant/${merchantId}`)
+            router.refresh()
+          }, 2000)
           return
         }
 

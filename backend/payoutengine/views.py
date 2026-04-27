@@ -13,7 +13,7 @@ from payoutengine.services.payout import (
     IdempotencyConflictError,
     PayoutError,
 )
-from payoutengine.services.ledger import get_merchant_balance
+from payoutengine.services.ledger import get_merchant_balance, get_held_balance
 from .tasks import process_payout
 
 
@@ -57,6 +57,10 @@ class MerchantDetailView(APIView):
 
         balance = get_merchant_balance(merchant.id)
 
+        held_balance = get_held_balance(merchant)
+
+        available_balance = balance - held_balance
+
         payouts = (
             Payout.objects
             .filter(merchant=merchant)
@@ -79,6 +83,8 @@ class MerchantDetailView(APIView):
             "merchant": {
                 "merchantName": merchant.name,
                 "balance": balance,
+                "heldBalance": held_balance,
+                "availableBalance": available_balance,
                 "payouts": payout_list,
             }
         })
@@ -99,7 +105,8 @@ class MerchantBankAccountsView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        accounts = BankAccount.objects.filter(merchant=merchant).order_by("account_number")
+        accounts = BankAccount.objects.filter(
+            merchant=merchant).order_by("account_number")
         data = [
             {
                 "bankAccountId": str(a.id),
