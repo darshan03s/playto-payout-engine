@@ -27,7 +27,8 @@ SECRET_KEY = 'django-insecure--sbr75u3zjy3!_f*4m@43)rjm%34_7k27fl)e7r)g3$^3ywi1%
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['playto-payout-engine-hmub.onrender.com']
+ALLOWED_HOSTS = ['playto-payout-engine-hmub.onrender.com',
+                 'playto-payout.darshans.site',]
 
 
 # Application definition
@@ -154,7 +155,9 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_BACKEND = None
 CELERY_TASK_ALWAYS_EAGER = "test" in sys.argv
 
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOWED_ORIGINS = [
+    "https://playto-payout.darshans.site",
+]
 
 CORS_ALLOW_HEADERS = [
     'content-type',
