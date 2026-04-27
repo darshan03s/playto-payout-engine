@@ -7,6 +7,18 @@ from payoutengine.models import LedgerEntry
 import time
 
 
+def assert_valid_transition(from_state: str, to_state: str):
+    allowed = {
+        Payout.Status.PENDING: [Payout.Status.PROCESSING],
+        Payout.Status.PROCESSING: [Payout.Status.COMPLETED, Payout.Status.FAILED],
+        Payout.Status.COMPLETED: [],
+        Payout.Status.FAILED: [],
+    }
+
+    if to_state not in allowed.get(from_state, []):
+        raise ValueError(f"Invalid transition {from_state} → {to_state}")
+
+
 @shared_task
 def debug_task(x, y):
     return x + y
@@ -30,6 +42,8 @@ def process_payout(payout_id):
 
         elif payout.status != Payout.Status.PENDING:
             return
+
+        assert_valid_transition(payout.status, Payout.Status.PROCESSING)
 
         payout.status = Payout.Status.PROCESSING
         payout.last_attempt_at = timezone.now()
@@ -59,6 +73,8 @@ def process_payout(payout_id):
             if payout.status != Payout.Status.PROCESSING:
                 return
 
+            assert_valid_transition(payout.status, Payout.Status.COMPLETED)
+
             payout.status = Payout.Status.COMPLETED
             payout.save(update_fields=["status", "updated_at"])
 
@@ -72,6 +88,8 @@ def process_payout(payout_id):
 
             if payout.status != Payout.Status.PROCESSING:
                 return
+
+            assert_valid_transition(payout.status, Payout.Status.FAILED)
 
             payout.status = Payout.Status.FAILED
             payout.failure_reason = "Bank failure"
