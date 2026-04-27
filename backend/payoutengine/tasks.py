@@ -24,6 +24,10 @@ def process_payout(payout_id):
             .get(id=payout_id)
         )
 
+        if payout.status == Payout.Status.PROCESSING:
+            if payout.last_attempt_at and (timezone.now() - payout.last_attempt_at).total_seconds() < 30:
+                return
+
         if payout.status != Payout.Status.PENDING:
             return
 
