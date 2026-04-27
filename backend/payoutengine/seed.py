@@ -1,8 +1,11 @@
 import random
-from payoutengine.models import Merchant, LedgerEntry, BankAccount
+from payoutengine.models import Merchant, LedgerEntry, BankAccount, Payout
 
 
 def run():
+    Payout.objects.all().delete()
+    LedgerEntry.objects.all().delete()
+    BankAccount.objects.all().delete()
     Merchant.objects.all().delete()
 
     merchant_names = ["Nimbus Labs", "Orion Digital"]
