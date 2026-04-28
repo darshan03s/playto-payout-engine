@@ -3,30 +3,31 @@ from payoutengine.models import Merchant, LedgerEntry, BankAccount, Payout
 
 
 def run():
-    Payout.objects.all().delete()
-    LedgerEntry.objects.all().delete()
-    BankAccount.objects.all().delete()
-    Merchant.objects.all().delete()
-
     merchant_names = ["Nimbus Labs", "Orion Digital"]
 
     merchants = []
 
+    # ── Ensure merchants + bank accounts exist ──
     for name in merchant_names:
-        merchant = Merchant.objects.create(name=name)
+        merchant, created = Merchant.objects.get_or_create(name=name)
 
-        for _ in range(2):
-            BankAccount.objects.create(
-                merchant=merchant,
-                account_number=str(random.randint(10**11, 10**12 - 1))
-            )
+        # ensure at least 2 bank accounts
+        existing_accounts = merchant.bank_accounts.count()
+
+        if existing_accounts < 2:
+            for _ in range(2 - existing_accounts):
+                BankAccount.objects.create(
+                    merchant=merchant,
+                    account_number=str(random.randint(10**11, 10**12 - 1))
+                )
 
         merchants.append(merchant)
 
+    # ── Always add new ledger entries ──
     for merchant in merchants:
-        # credits
+        # credits (bigger amounts)
         for _ in range(5):
-            amount = random.randint(5000, 20000)
+            amount = random.randint(10000, 50000)  # ₹100–₹500
             LedgerEntry.objects.create(
                 merchant=merchant,
                 amount=amount,
@@ -36,7 +37,7 @@ def run():
 
         # debits
         for _ in range(2):
-            amount = random.randint(1000, 5000)
+            amount = random.randint(5000, 20000)  # ₹50–₹200
             LedgerEntry.objects.create(
                 merchant=merchant,
                 amount=amount,
