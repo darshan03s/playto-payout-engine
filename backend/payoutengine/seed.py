@@ -3,8 +3,8 @@ from payoutengine.models import Merchant, LedgerEntry, BankAccount, Payout
 
 
 def run():
-    Payout.objects.all().delete()
-    LedgerEntry.objects.all().delete()
+    # Payout.objects.all().delete()
+    # LedgerEntry.objects.all().delete()
 
     merchant_names = ["Nimbus Labs", "Orion Digital"]
 
