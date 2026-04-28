@@ -3,6 +3,8 @@
 A minimal payout engine that simulates how money moves from a platform to merchants.
 Built as part of the Playto Founding Engineer Challenge.
 
+Live: https://playto-payout.darshans.site
+
 ---
 
 ## Overview
