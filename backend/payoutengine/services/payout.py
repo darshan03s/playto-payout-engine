@@ -10,12 +10,14 @@ from payoutengine.models import (
     Payout,
     LedgerEntry,
     IdempotencyKey,
+    BankAccount
 )
 from payoutengine.services.ledger import get_merchant_balance
 
 
 class PayoutError(Exception):
     """Base exception for payout service errors."""
+
     def __init__(self, message: str, status_code: int = 400):
         self.message = message
         self.status_code = status_code
@@ -29,6 +31,7 @@ class InsufficientFundsError(PayoutError):
 
 class IdempotencyConflictError(PayoutError):
     """Request with this idempotency key is still in-flight."""
+
     def __init__(self):
         super().__init__(
             "A request with this idempotency key is already in progress.",
@@ -38,6 +41,7 @@ class IdempotencyConflictError(PayoutError):
 
 class IdempotencyHitResult:
     """Returned when an idempotency key has already been processed."""
+
     def __init__(self, response_data: dict):
         self.response_data = response_data
 
@@ -88,6 +92,23 @@ def create_payout(
             .get(id=merchant.id)
         )
 
+        bank_account = (
+            BankAccount.objects
+            .select_for_update()
+            .filter(id=bank_account_id, merchant=locked_merchant)
+            .first()
+        )
+
+        if not bank_account:
+            error_response = {
+                "error": "Invalid bank account for this merchant.",
+                "status": "rejected",
+            }
+            idem_record.response_data = error_response
+            idem_record.save(update_fields=["response_data", "updated_at"])
+
+            raise PayoutError("Invalid bank account.", status_code=400)
+
         # ── Step 3: Compute available balance at DB level ──
         available_balance = get_merchant_balance(locked_merchant.id)
 
@@ -106,7 +127,7 @@ def create_payout(
         # ── Step 5: Create payout record ──
         payout = Payout.objects.create(
             merchant=locked_merchant,
-            bank_account_id=bank_account_id,
+            bank_account=bank_account,
             amount=amount_paise,
             status=Payout.Status.PENDING,
         )
@@ -124,7 +145,8 @@ def create_payout(
         response_data = _build_response_data(payout)
         idem_record.payout = payout
         idem_record.response_data = response_data
-        idem_record.save(update_fields=["payout", "response_data", "updated_at"])
+        idem_record.save(
+            update_fields=["payout", "response_data", "updated_at"])
 
     # ── Step 8: Transaction committed — return response ──
     return response_data, True
