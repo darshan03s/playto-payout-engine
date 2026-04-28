@@ -38,6 +38,20 @@ def process_payout(payout_id):
             .get(id=payout_id)
         )
 
+        earlier_pending_exists = (
+            Payout.objects
+            .filter(
+                merchant=payout.merchant,
+                status__in=[Payout.Status.PENDING, Payout.Status.PROCESSING],
+                created_at__lt=payout.created_at
+            )
+            .exists()
+        )
+
+        if earlier_pending_exists:
+            process_payout.apply_async(args=[payout_id], countdown=5)
+            return
+
         if payout.status == Payout.Status.PROCESSING:
             if payout.last_attempt_at and (timezone.now() - payout.last_attempt_at).total_seconds() < 30:
                 return
@@ -169,8 +183,8 @@ def retry_stuck_payouts():
         )
         .values_list("id", flat=True)
     )
-    
-    if(len(stuck_payouts) > 0):
+
+    if (len(stuck_payouts) > 0):
         print(f"Found {len(stuck_payouts)} stuck payouts")
 
     for payout_id in stuck_payouts:
