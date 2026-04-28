@@ -27,7 +27,7 @@ def run():
     for merchant in merchants:
         # credits (bigger amounts)
         for _ in range(5):
-            amount = random.randint(10000, 50000)  # ₹100–₹500
+            amount = random.randint(10000, 50000)
             LedgerEntry.objects.create(
                 merchant=merchant,
                 amount=amount,
@@ -37,7 +37,7 @@ def run():
 
         # debits
         for _ in range(2):
-            amount = random.randint(5000, 20000)  # ₹50–₹200
+            amount = random.randint(5000, 20000)
             LedgerEntry.objects.create(
                 merchant=merchant,
                 amount=amount,
