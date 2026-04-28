@@ -53,6 +53,23 @@ services:
       DB_HOST: db
       DB_PORT: 5432
       CELERY_BROKER_URL: redis://redis:6379/0
+    
+  beat:
+    build: .
+    container_name: playto_beat
+    command: sh -c "python wait_for_db.py && celery -A core beat -l info"
+    volumes:
+      - .:/app
+    depends_on:
+      - db
+      - redis
+    environment:
+      DB_NAME: payout_engine
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_HOST: db
+      DB_PORT: 5432
+      CELERY_BROKER_URL: redis://redis:6379/0
 
 volumes:
   postgres_data:

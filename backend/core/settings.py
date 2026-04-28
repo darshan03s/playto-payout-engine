@@ -158,6 +158,13 @@ CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_BACKEND = None
 CELERY_TASK_ALWAYS_EAGER = "test" in sys.argv
 
+CELERY_BEAT_SCHEDULE = {
+    "retry-stuck-payouts": {
+        "task": "payoutengine.tasks.retry_stuck_payouts",
+        "schedule": 10.0,
+    },
+}
+
 CORS_ALLOWED_ORIGINS = [
     "https://playto-payout.darshans.site",
     "http://localhost:3000",

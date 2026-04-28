@@ -1,3 +1,4 @@
+from datetime import timedelta
 from celery import shared_task
 from django.db import transaction
 from payoutengine.models import Payout
@@ -11,7 +12,7 @@ from django.conf import settings
 def assert_valid_transition(from_state: str, to_state: str):
     allowed = {
         Payout.Status.PENDING: [Payout.Status.PROCESSING],
-        Payout.Status.PROCESSING: [Payout.Status.COMPLETED, Payout.Status.FAILED],
+        Payout.Status.PROCESSING: [Payout.Status.COMPLETED, Payout.Status.FAILED, Payout.Status.PROCESSING],
         Payout.Status.COMPLETED: [],
         Payout.Status.FAILED: [],
     }
@@ -154,3 +155,24 @@ def process_payout(payout_id):
             args=[payout_id],
             countdown=delay_seconds
         )
+
+
+@shared_task
+def retry_stuck_payouts():
+    cutoff = timezone.now() - timedelta(seconds=30)
+
+    stuck_payouts = (
+        Payout.objects
+        .filter(
+            status=Payout.Status.PROCESSING,
+            last_attempt_at__lt=cutoff
+        )
+        .values_list("id", flat=True)
+    )
+
+    print(f"Found {len(stuck_payouts)} payouts")
+
+    for payout_id in stuck_payouts:
+        print(f"Retrying {payout_id}")
+
+        process_payout.delay(payout_id)
