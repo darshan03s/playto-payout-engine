@@ -40,7 +40,8 @@ services:
   celery:
     build: .
     container_name: playto_celery
-    command: sh -c "python wait_for_db.py && celery -A core worker -l info"
+    command: sh -c "python wait_for_db.py && celery -A core worker -l info
+      --concurrency=1"
     volumes:
       - .:/app
     depends_on:
