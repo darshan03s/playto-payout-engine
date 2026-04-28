@@ -36,12 +36,14 @@ const MerchantData = ({ merchantId }: { merchantId: string }) => {
   }
 
   useEffect(() => {
-    fetchData()
-
-    const interval = setInterval(fetchData, 5000)
+    const interval = setInterval(() => {
+      if (merchant?.payouts.some((m) => m.status === 'processing')) {
+        fetchData()
+      }
+    }, 5000)
 
     return () => clearInterval(interval)
-  }, [])
+  }, [merchant])
 
   if (!merchant) return null
 
