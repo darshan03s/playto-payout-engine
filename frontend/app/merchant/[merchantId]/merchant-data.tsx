@@ -13,6 +13,7 @@ import {
   TableCell
 } from '@/components/ui/table'
 import Link from 'next/link'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 const statusColor: Record<Payout['status'], string> = {
   pending: 'text-yellow-600',
@@ -65,43 +66,79 @@ const MerchantData = ({ merchantId }: { merchantId: string }) => {
           </div>
         </div>
 
-        <h2 className="text-lg font-semibold mb-4">Payouts</h2>
-
-        {merchant.payouts.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <p className="text-muted-foreground">No payouts yet</p>
-            <p className="text-muted-foreground text-sm mt-1">
-              Payouts you request will appear here.
-            </p>
-          </div>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Payout ID</TableHead>
-                <TableHead>Requested At</TableHead>
-                <TableHead>Bank Account</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-                <TableHead>Status</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {merchant.payouts.map((p) => (
-                <TableRow key={p.payoutId}>
-                  <TableCell className="font-mono text-xs">{p.payoutId}</TableCell>
-                  <TableCell>{new Date(p.requestedAt).toLocaleString()}</TableCell>
-                  <TableCell>{p.bankAccount}</TableCell>
-                  <TableCell className="text-right">{formatAmount(p.amount)}</TableCell>
-                  <TableCell>
-                    <span className={`capitalize font-medium ${statusColor[p.status]}`}>
-                      {p.status}
-                    </span>
-                  </TableCell>
+        <Tabs defaultValue="payouts">
+          <TabsList>
+            <TabsTrigger value="payouts">Payouts</TabsTrigger>
+            <TabsTrigger value="recent-activity">Recent Activity</TabsTrigger>
+          </TabsList>
+          <TabsContent value="payouts">
+            {merchant.payouts.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-12 text-center">
+                <p className="text-muted-foreground">No payouts yet</p>
+                <p className="text-muted-foreground text-sm mt-1">
+                  Payouts you request will appear here.
+                </p>
+              </div>
+            ) : (
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Payout ID</TableHead>
+                    <TableHead>Requested At</TableHead>
+                    <TableHead>Bank Account</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead>Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {merchant.payouts.map((p) => (
+                    <TableRow key={p.payoutId}>
+                      <TableCell className="font-mono text-xs">{p.payoutId}</TableCell>
+                      <TableCell>{new Date(p.requestedAt).toLocaleString()}</TableCell>
+                      <TableCell>{p.bankAccount}</TableCell>
+                      <TableCell className="text-right">{formatAmount(p.amount)}</TableCell>
+                      <TableCell>
+                        <span className={`capitalize font-medium ${statusColor[p.status]}`}>
+                          {p.status}
+                        </span>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            )}
+          </TabsContent>
+          <TabsContent value="recent-activity">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Reference</TableHead>
+                  <TableHead>Created At</TableHead>
+                  <TableHead className="text-right">Amount</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
+              </TableHeader>
+              <TableBody>
+                {merchant.ledger.map((l) => (
+                  <TableRow key={l.entryId}>
+                    <TableCell>
+                      <span
+                        className={`capitalize font-medium ${
+                          l.type === 'credit' ? 'text-green-600' : 'text-red-600'
+                        }`}
+                      >
+                        {l.type}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-xs font-mono">{l.reference || '-'}</TableCell>
+                    <TableCell>{new Date(l.createdAt).toLocaleString()}</TableCell>
+                    <TableCell className="text-right">₹{(l.amount / 100).toFixed(2)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   )

@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-from payoutengine.models import Merchant, Payout, BankAccount
+from payoutengine.models import Merchant, Payout, BankAccount, LedgerEntry
 from payoutengine.serializers import (
     PayoutRequestSerializer,
     validate_idempotency_key,
@@ -77,12 +77,31 @@ class MerchantDetailView(APIView):
             for p in payouts
         ]
 
+        ledger_entries = (
+            LedgerEntry.objects
+            .filter(merchant=merchant)
+            .order_by("-created_at")[:10]
+        )
+
+        ledger_list = [
+            {
+                "entryId": str(l.id),
+                "type": l.entry_type,
+                "amount": l.amount,
+                "reference": l.reference,
+                "createdAt": l.created_at.isoformat(),
+                "payoutId": str(l.payout.id) if l.payout else None,
+            }
+            for l in ledger_entries
+        ]
+
         return Response({
             "merchant": {
                 "merchantName": merchant.name,
                 "heldBalance": held_balance,
                 "availableBalance": balance,
                 "payouts": payout_list,
+                "ledger": ledger_list,
             }
         })
 

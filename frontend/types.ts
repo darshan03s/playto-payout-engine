@@ -4,6 +4,7 @@ export interface Merchant {
   availableBalance: number
   heldBalance: number
   payouts: Payout[]
+  ledger: LedgerEntry[]
 }
 
 export interface Payout {
@@ -12,4 +13,13 @@ export interface Payout {
   bankAccount: string
   amount: number
   status: 'pending' | 'processing' | 'completed' | 'failed'
+}
+
+export interface LedgerEntry {
+  entryId: string
+  type: 'credit' | 'debit'
+  amount: number
+  reference: string
+  createdAt: string
+  payoutId: string | null
 }
