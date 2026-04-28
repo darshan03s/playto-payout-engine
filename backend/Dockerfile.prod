@@ -13,4 +13,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 # copy project
 COPY . .
 
-CMD sh -c "python wait_for_db.py && python manage.py migrate && python manage.py collectstatic --noinput && python manage.py shell -c 'from init_app import run; run()' && celery -A core worker -l info & celery -A core beat -l info & gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 3"
+CMD sh -c "python wait_for_db.py && python manage.py migrate && python manage.py collectstatic --noinput && python manage.py shell -c 'from init_app import run; run()' && celery -A core worker -l info & celery -A core beat -l info & gunicorn core.wsgi:application --bind 0.0.0.0:$PORT --workers 1"
