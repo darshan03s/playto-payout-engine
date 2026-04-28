@@ -169,8 +169,9 @@ def retry_stuck_payouts():
         )
         .values_list("id", flat=True)
     )
-
-    print(f"Found {len(stuck_payouts)} payouts")
+    
+    if(len(stuck_payouts) > 0):
+        print(f"Found {len(stuck_payouts)} stuck payouts")
 
     for payout_id in stuck_payouts:
         print(f"Retrying {payout_id}")
