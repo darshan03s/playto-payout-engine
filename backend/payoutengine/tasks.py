@@ -7,6 +7,7 @@ import random
 from payoutengine.models import LedgerEntry
 import time
 from django.conf import settings
+from django.db import models
 
 
 def assert_valid_transition(from_state: str, to_state: str):
@@ -178,8 +179,14 @@ def retry_stuck_payouts():
     stuck_payouts = (
         Payout.objects
         .filter(
-            status=Payout.Status.PROCESSING,
-            last_attempt_at__lt=cutoff
+            models.Q(
+                status=Payout.Status.PROCESSING,
+                last_attempt_at__lt=cutoff
+            ) |
+            models.Q(
+                status=Payout.Status.PENDING,
+                created_at__lt=timezone.now() - timedelta(seconds=60)
+            )
         )
         .values_list("id", flat=True)
     )
