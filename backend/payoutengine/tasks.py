@@ -5,6 +5,7 @@ from django.utils import timezone
 import random
 from payoutengine.models import LedgerEntry
 import time
+from django.conf import settings
 
 
 def assert_valid_transition(from_state: str, to_state: str):
@@ -24,7 +25,7 @@ def debug_task(x, y):
     return x + y
 
 
-PROCESSING_DELAY_SECONDS = 30
+PROCESSING_DELAY_SECONDS = 0 if getattr(settings, "IS_TEST", False) else 30
 
 
 @shared_task

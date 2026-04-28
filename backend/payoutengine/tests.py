@@ -4,6 +4,10 @@ from payoutengine.models import Merchant, LedgerEntry, BankAccount, Payout
 import uuid
 from threading import Thread
 from django.db import connection
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
+from django.db.models import Value
+from payoutengine.services.ledger import get_merchant_balance
 
 
 class BasePayoutTest(TestCase):
@@ -129,3 +133,46 @@ class ConcurrencyTest(TransactionTestCase):
 
         self.assertEqual(success_count, 1)
         self.assertEqual(fail_count, 1)
+
+
+class LedgerInvariantTest(TestCase):
+
+    def test_credits_minus_debits_equals_balance(self):
+        merchant = Merchant.objects.create(name="Invariant Test Merchant")
+
+        # Create credits
+        LedgerEntry.objects.create(
+            merchant=merchant,
+            amount=10000,
+            entry_type=LedgerEntry.EntryType.CREDIT,
+        )
+        LedgerEntry.objects.create(
+            merchant=merchant,
+            amount=5000,
+            entry_type=LedgerEntry.EntryType.CREDIT,
+        )
+
+        # Create debits
+        LedgerEntry.objects.create(
+            merchant=merchant,
+            amount=3000,
+            entry_type=LedgerEntry.EntryType.DEBIT,
+        )
+
+        # Compute expected manually (DB-level)
+        credits = LedgerEntry.objects.filter(
+            merchant=merchant,
+            entry_type=LedgerEntry.EntryType.CREDIT
+        ).aggregate(total=Coalesce(Sum("amount"), Value(0)))["total"]
+
+        debits = LedgerEntry.objects.filter(
+            merchant=merchant,
+            entry_type=LedgerEntry.EntryType.DEBIT
+        ).aggregate(total=Coalesce(Sum("amount"), Value(0)))["total"]
+
+        expected_balance = credits - debits
+
+        # Your function
+        actual_balance = get_merchant_balance(merchant.id)
+
+        self.assertEqual(expected_balance, actual_balance)

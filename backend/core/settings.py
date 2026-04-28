@@ -168,3 +168,5 @@ CORS_ALLOW_HEADERS = [
     'x-merchant-id',
     'idempotency-key',
 ]
+
+IS_TEST = "test" in sys.argv
