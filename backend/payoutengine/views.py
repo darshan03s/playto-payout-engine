@@ -59,8 +59,6 @@ class MerchantDetailView(APIView):
 
         held_balance = get_held_balance(merchant)
 
-        available_balance = balance
-
         payouts = (
             Payout.objects
             .filter(merchant=merchant)
@@ -82,9 +80,8 @@ class MerchantDetailView(APIView):
         return Response({
             "merchant": {
                 "merchantName": merchant.name,
-                "balance": balance,
                 "heldBalance": held_balance,
-                "availableBalance": available_balance,
+                "availableBalance": balance,
                 "payouts": payout_list,
             }
         })
