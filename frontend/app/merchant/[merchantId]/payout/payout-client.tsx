@@ -30,7 +30,9 @@ const PayoutClient = ({ bankAccounts }: { bankAccounts: BankAccount[] }) => {
 
   const router = useRouter()
 
-  const handleProceed = async () => {
+  const handleProceed = async (e: React.SubmitEvent) => {
+    e.preventDefault()
+
     setError('')
 
     if (!selectedAccountId) {
@@ -103,7 +105,7 @@ const PayoutClient = ({ bankAccounts }: { bankAccounts: BankAccount[] }) => {
   }
 
   return (
-    <div className="w-full max-w-md space-y-5">
+    <form onSubmit={handleProceed} className="w-full max-w-md space-y-5">
       <h2 className="text-xl font-bold">Request Payout</h2>
 
       <div className="space-y-1.5">
@@ -139,11 +141,11 @@ const PayoutClient = ({ bankAccounts }: { bankAccounts: BankAccount[] }) => {
       {success.length > 0 ? (
         <p className="text-2xl text-green-600 text-center font-bold">{success}</p>
       ) : (
-        <Button className="w-full" size="lg" disabled={loading} onClick={handleProceed}>
+        <Button type="submit" className="w-full" size="lg" disabled={loading}>
           {loading ? 'Processing...' : 'Proceed'}
         </Button>
       )}
-    </div>
+    </form>
   )
 }
 
